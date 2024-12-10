@@ -51,7 +51,10 @@ for trailhead in trailheads:
     for i in range(9):
         for j in range(len(curr_dict[i])):
             # megnézzük, hogy az i. elem szomszédai között van-e, ami i+1 értékű, ha igen, felvesszük a dictionary-be
-            # print(curr_dict[i][j][0], curr_dict[i][j][1])
+            """
+            10a megoldása
+
+
             [north_y, north_x] = check_neighbor(map, curr_dict[i][j][0], curr_dict[i][j][1], 'N', i+1)
             if [north_y, north_x] != [-1, -1] and any([north_y, north_x] in sublist for sublist in curr_dict.values()) == False:
                 curr_dict[i+1].append([north_y, north_x])
@@ -64,6 +67,20 @@ for trailhead in trailheads:
             [west_y, west_x] = check_neighbor(map, curr_dict[i][j][0], curr_dict[i][j][1], 'W', i+1)
             if [west_y, west_x] != [-1, -1] and any([west_y, west_x] in sublist for sublist in curr_dict.values()) == False:
                 curr_dict[i+1].append([west_y, west_x])
+            """
+            [north_y, north_x] = check_neighbor(map, curr_dict[i][j][0], curr_dict[i][j][1], 'N', i+1)
+            if [north_y, north_x] != [-1, -1] and [north_y, north_x] not in curr_dict[i][j]:
+                curr_dict[i+1].append([north_y, north_x])
+            [east_y, east_x] = check_neighbor(map, curr_dict[i][j][0], curr_dict[i][j][1], 'E', i+1)
+            if [east_y, east_x] != [-1, -1] and [east_y, east_x] not in curr_dict[i][j]:
+                curr_dict[i+1].append([east_y,east_x])
+            [south_y, south_x] = check_neighbor(map, curr_dict[i][j][0], curr_dict[i][j][1], 'S', i+1)
+            if [south_y, south_x] != [-1, -1] and [south_y, south_x] not in curr_dict[i][j]:
+                curr_dict[i+1].append([south_y, south_x])
+            [west_y, west_x] = check_neighbor(map, curr_dict[i][j][0], curr_dict[i][j][1], 'W', i+1)
+            if [west_y, west_x] != [-1, -1] and [west_y, west_x] not in curr_dict[i][j]:
+                curr_dict[i+1].append([west_y, west_x])
+
 
     # összegyűjtöttük az adott trailheadből bejárható összes pontot; meg kell számolnunk a 9eseket
     result += (len(curr_dict[9]))
