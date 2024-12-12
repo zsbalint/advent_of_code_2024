@@ -1,5 +1,5 @@
-import copy
 import time
+import bigtree
 
 start = time.time()
 
@@ -39,73 +39,75 @@ print(len(stones))
 """
 11B
 """
-
-# átírjuk az inputot a stones1.txt fájlba, soronként egy adatot
-file = open('input2.txt', 'r')
+file = open('input.txt', 'r')
 content = file.read()
 stones = content.split()
-file.close()
-file2 = open('stones1.txt', 'w').close()
-file2 = open('stones1.txt', 'a')
-for i in range(len(stones)):
-    if i < len(stones)-1:
-        file2.write(stones[i] + '\n')
+
+def step(number):
+    if number == '0':
+        return ['1']
+    elif len(number) % 2 == 0:
+        s1 = number[:int(len(number)/2)]
+        s2 = number[int(len(number)/2):]
+        return [s1, str(int(s2))]
     else:
-        file2.write(stones[i])
-file2.close()
-
-def get_file_length(filename):
-    file = open(filename, 'r')
-    lines = file.readlines()
-    file.close()
-    return len(lines)
+        return [str(int(number)*2024)]
+       
+    
 
 
-def process_a_blink(file1, file2):
-    output_file = open(file2, 'w').close()
-    for i in range(get_file_length(file1)):
-        input_file = open(file1, 'r')       
-        output_file = open(file2, 'a')
-        for n, line in enumerate(input_file):
-            if n == i:
-                current_stone = line
-            elif n > i:
-                break
-        input_file.close()
+def process_number(number, max_depth):
+    id = 0
+    total_stones = 0
+    # creating the root node
+    root = bigtree.Node(str(id), value = number, processed = False)
+    id += 1
+    # run until done
+    finished = False
 
-        # print("Currently checked stone is", current_stone)
 
-        current_stone = current_stone.replace('\n', '')
-        if current_stone == '0':
-
-            # print("Current stone is 0, changing to 1.")
-
-            output_file.write('1\n')
-        elif len(current_stone) % 2 == 0:
-            s1 = current_stone[:int(len(current_stone)/2)]
-            s2 = current_stone[int(len(current_stone)/2):]
-
-            # print("Current stone" , current_stone, "had even digits, splitting to", s1, s2)
-
-            output_file.write(s1 + '\n')
-            output_file.write((str(int(s2))) + '\n')
-            # print(s1, s2)
+    while finished == False:
+        
+        # search for the deepest unprocessed node
+        available_nodes = bigtree.findall(root, lambda node: node.processed == False)
+        deepest = 0
+        for node in available_nodes:
+            if node.depth > deepest:
+                deepest = node.depth
+        current_node = bigtree.findall(root, lambda node: (node.depth == deepest and node.processed == False))[0]
+        # print("Iteration", iter, "Current node:", current_node.name)
+        if current_node.depth == max_depth+1:
+            total_stones += 1
+            # bigtree.print_tree(root)
+            # print("Starting number {0} has reached maximum depth with a result of {1} in {2} seconds".format(number, current_node.value, time.time()-start))
+            bigtree.shift_nodes(root, [current_node.path_name], [None])
+            # bigtree.print_tree(root)
+            # break
         else:
+            children_list = step(current_node.value)
+            for children in children_list:
+                child = bigtree.Node(str(id), value = children, processed = False, parent = current_node)
+                id += 1
+                current_node.processed = True
+                # print("Child node", child.value, "is now added under", current_node.value)
+        # cleanup: search for every node that has 0 children and processed == True
+        to_delete = bigtree.findall(root, lambda node: (len(node.children) == 0 and node.processed == True))
+        for item in to_delete:
+            # print("Node with value", item.value, "depth", item.depth, "is deleted at", time.time() - start, "seconds.") 
+            bigtree.shift_nodes(root, [item.path_name], [None])
+        
+        if len(bigtree.findall(root, lambda node: node.processed == False)) == 0:
+            finished = True 
 
-            # print("Else: multiply by 2024, result is", str(int(current_stone) * 2024))
-            output_file.write((str(int(current_stone) * 2024)) + '\n')
-        output_file.close()
+    return total_stones    
 
 
-for i in range(BLINKS):
-    if i % 2 == 0:
-        process_a_blink('stones1.txt', 'stones2.txt')
-    else:
-        process_a_blink('stones2.txt', 'stones1.txt')
-    print("Blink", i, "finished, time:", time.time() - start) 
+final_sum = 0
+for i in stones:
+    result = process_number(i,BLINKS)
+    print("Number {0} has finished with a result of {1} in {2} seconds.".format(i, result, time.time()-start))
+    final_sum += result
+# process_number('125', 25)
+# process_number('17', 25)
 
-
-if BLINKS % 2 == 0:
-    print(get_file_length('stones1.txt'))
-else:
-    print(get_file_length('stones2.txt'))
+print(final_sum)
