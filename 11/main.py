@@ -1,9 +1,11 @@
 import time
 import bigtree
+import functools
+import copy
 
 start = time.time()
 
-BLINKS = 25
+
 """
 11A
 """
@@ -38,7 +40,11 @@ print(len(stones))
 
 """
 11B
+
+a fastruktúrás megoldás lefutása 7500 évet venne igénybe. köszi.
+
 """
+
 file = open('input.txt', 'r')
 content = file.read()
 stones = content.split()
@@ -65,49 +71,58 @@ def process_number(number, max_depth):
     # run until done
     finished = False
 
-
+    current_node = root
     while finished == False:
-        
-        # search for the deepest unprocessed node
-        available_nodes = bigtree.findall(root, lambda node: node.processed == False)
-        deepest = 0
-        for node in available_nodes:
-            if node.depth > deepest:
-                deepest = node.depth
-        current_node = bigtree.findall(root, lambda node: (node.depth == deepest and node.processed == False))[0]
-        # print("Iteration", iter, "Current node:", current_node.name)
+        # ha elértük a legalsó szintet, számolunk és törlünk
         if current_node.depth == max_depth+1:
             total_stones += 1
             # bigtree.print_tree(root)
             # print("Starting number {0} has reached maximum depth with a result of {1} in {2} seconds".format(number, current_node.value, time.time()-start))
+            if len(current_node.siblings) > 0:
+                next_node = current_node.siblings[0]
+            else:
+                next_node = current_node.parent
             bigtree.shift_nodes(root, [current_node.path_name], [None])
+            current_node = next_node
             # bigtree.print_tree(root)
             # break
+        elif len(current_node.children) == 0 and current_node.processed == True:
+            if len(current_node.siblings) > 0:
+                next_node = current_node.siblings[0]
+            else:
+                next_node = current_node.parent
+            # print("Deleting childless processed node with value {0} and depth {1} at {2} seconds.".format(current_node.value, current_node.depth, time.time()-start))
+            bigtree.shift_nodes(root, [current_node.path_name], [None])
+            current_node = next_node       
         else:
             children_list = step(current_node.value)
             for children in children_list:
                 child = bigtree.Node(str(id), value = children, processed = False, parent = current_node)
+                next_node = child
                 id += 1
                 current_node.processed = True
                 # print("Child node", child.value, "is now added under", current_node.value)
-        # cleanup: search for every node that has 0 children and processed == True
-        to_delete = bigtree.findall(root, lambda node: (len(node.children) == 0 and node.processed == True))
-        for item in to_delete:
-            # print("Node with value", item.value, "depth", item.depth, "is deleted at", time.time() - start, "seconds.") 
-            bigtree.shift_nodes(root, [item.path_name], [None])
+            current_node = next_node
         
-        if len(bigtree.findall(root, lambda node: node.processed == False)) == 0:
+        if current_node == root:
             finished = True 
-
+    # print("Number {0} has finished with a result of {1} in {2} seconds.".format(number, total_stones, time.time()-start))
     return total_stones    
 
 
-final_sum = 0
-for i in stones:
-    result = process_number(i,BLINKS)
-    print("Number {0} has finished with a result of {1} in {2} seconds.".format(i, result, time.time()-start))
-    final_sum += result
-# process_number('125', 25)
-# process_number('17', 25)
 
+
+
+
+
+final_sum = 0
+for i in stones_input:
+    first = process_number(tuple([i]),)
+    result = process_number(tuple(first),BLINKS)
+    print("Number {0} has finished with a result of {1} in {2} seconds.".format(i, len(result), time.time()-start))
+    final_sum += len(result)
 print(final_sum)
+print(process_number.cache_info())
+
+
+
