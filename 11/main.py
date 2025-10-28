@@ -115,7 +115,7 @@ with open("input.txt", "r") as input_file:
 # Parse text into indvidual
 stones = list(map(int, raw_text.split()))
 
-@functools.lru_cache(maxsize=None)
+# @functools.lru_cache(maxsize=None)
 def single_blink_stone(value):
 
     # Convert value to text
@@ -139,7 +139,7 @@ def single_blink_stone(value):
     else:
         return (value * 2024, None)
 
-@functools.lru_cache(maxsize=None)
+# @functools.lru_cache(maxsize=None)
 def count_stone_blinks(stone, depth):
 
     # For this iteration, what is the update for this stone?
